@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Local forum databases
+data/
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+
+# OS / editor junk
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Packaged copy of this repo
+*.zip

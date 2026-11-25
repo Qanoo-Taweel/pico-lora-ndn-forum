@@ -1,0 +1,311 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LoRa Forum</title>
+<style>
+:root{
+  --bg:#f4f5f7; --panel:#ffffff; --ink:#1d2330; --muted:#6b7280; --line:#e3e6eb;
+  --accent:#2563eb; --accent-ink:#ffffff; --accent-soft:#e8efff;
+  --ok:#16a34a; --ok-soft:#e7f6ec; --warn:#b45309; --warn-soft:#fdf2e2; --bad:#dc2626;
+  --lora:#7c3aed; --lora-soft:#f1eafe; --shadow:0 1px 2px rgba(16,24,40,.06),0 1px 3px rgba(16,24,40,.08);
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0f1218; --panel:#171b23; --ink:#e6e8ee; --muted:#9aa3b2; --line:#2a303b;
+  --accent:#6b9bff; --accent-ink:#0b1020; --accent-soft:#1c2740;
+  --ok:#4ade80; --ok-soft:#163222; --warn:#fbbf24; --warn-soft:#3a2c10; --bad:#f87171;
+  --lora:#b794ff; --lora-soft:#2a1f45; --shadow:none;}}
+:root[data-theme="dark"]{
+  --bg:#0f1218; --panel:#171b23; --ink:#e6e8ee; --muted:#9aa3b2; --line:#2a303b;
+  --accent:#6b9bff; --accent-ink:#0b1020; --accent-soft:#1c2740;
+  --ok:#4ade80; --ok-soft:#163222; --warn:#fbbf24; --warn-soft:#3a2c10; --bad:#f87171;
+  --lora:#b794ff; --lora-soft:#2a1f45; --shadow:none;}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+button,input,select,textarea{font:inherit;color:inherit}
+header{position:sticky;top:0;z-index:5;background:var(--panel);border-bottom:1px solid var(--line);
+  display:flex;align-items:center;gap:12px;padding:10px 20px;flex-wrap:wrap}
+.logo{font-weight:700;font-size:18px;display:flex;align-items:center;gap:8px}
+.logo svg{color:var(--lora)}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:999px;font-size:13px;
+  background:var(--bg);border:1px solid var(--line);white-space:nowrap}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--muted)}
+.dot.on{background:var(--ok)} .dot.off{background:var(--bad)}
+.spacer{flex:1}
+.btn{border:1px solid var(--line);background:var(--panel);border-radius:8px;padding:7px 14px;cursor:pointer}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:600}
+.btn.small{padding:3px 10px;font-size:13px}
+main{display:grid;grid-template-columns:minmax(280px,380px) 1fr 300px;gap:16px;padding:16px 20px;max-width:1500px;margin:0 auto}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);min-width:0}
+.panel h2{font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:0 0 10px}
+.pad{padding:14px}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;padding:12px;border-bottom:1px solid var(--line)}
+.toolbar input{flex:1 1 140px;min-width:0}
+input,select,textarea{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:7px 10px;width:100%}
+select{width:auto}
+textarea{resize:vertical;min-height:70px}
+.chips{display:flex;gap:6px;flex-wrap:wrap;padding:8px 12px;border-bottom:1px solid var(--line)}
+.chip{border:1px solid var(--line);background:none;border-radius:999px;padding:2px 10px;font-size:13px;cursor:pointer}
+.chip.on{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+.list{max-height:calc(100vh - 230px);overflow:auto}
+.topic{padding:12px 14px;border-bottom:1px solid var(--line);cursor:pointer;display:grid;grid-template-columns:38px 1fr;gap:10px}
+.topic:hover{background:var(--bg)} .topic.sel{background:var(--accent-soft)}
+.score{text-align:center;font-weight:700;color:var(--muted);font-size:14px}
+.score small{display:block;font-weight:400;font-size:11px}
+.ttitle{font-weight:600;overflow-wrap:anywhere}
+.meta{color:var(--muted);font-size:12.5px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:3px}
+.tag{font-size:11.5px;padding:1px 7px;border-radius:6px;background:var(--bg);border:1px solid var(--line)}
+.tag.lora{background:var(--lora-soft);color:var(--lora);border-color:transparent}
+.tick{font-size:12px} .tick.done{color:var(--ok)} .tick.wait{color:var(--warn)}
+.empty{padding:30px 16px;text-align:center;color:var(--muted)}
+.detail{padding:20px 24px}
+.detail h1{font-size:22px;margin:4px 0 8px;overflow-wrap:anywhere}
+.body{white-space:pre-wrap;overflow-wrap:anywhere;margin:12px 0 16px}
+.votes{display:inline-flex;align-items:center;gap:4px;border:1px solid var(--line);border-radius:8px;padding:2px}
+.votes button{border:none;background:none;cursor:pointer;padding:2px 8px;border-radius:6px;color:var(--muted)}
+.votes button.on{color:var(--accent);background:var(--accent-soft)}
+.votes span{min-width:22px;text-align:center;font-weight:600}
+.comment{border-top:1px solid var(--line);padding:12px 0;display:grid;grid-template-columns:1fr auto;gap:8px}
+.comment p{margin:4px 0 0;white-space:pre-wrap;overflow-wrap:anywhere}
+.counter{font-size:12px;color:var(--muted);display:flex;justify-content:space-between;margin-top:4px}
+.counter.over{color:var(--bad)}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+.stat{background:var(--bg);border-radius:8px;padding:8px 10px}
+.stat b{display:block;font-size:18px}
+.stat span{font-size:12px;color:var(--muted)}
+.peer{display:flex;align-items:center;gap:8px;font-size:14px;margin-bottom:6px}
+.log{font-family:var(--mono);font-size:11.5px;max-height:260px;overflow:auto;border-top:1px solid var(--line);padding-top:8px}
+.log div{display:grid;grid-template-columns:18px 1fr;gap:4px;padding:1px 0;color:var(--muted)}
+.log .in{color:var(--lora)} .log .out{color:var(--accent)} .log .drop,.log .timeout,.log .error{color:var(--warn)}
+.log .served{color:var(--ok)}
+.log span{overflow-wrap:anywhere}
+.feed div{font-size:13px;padding:4px 0;border-bottom:1px dashed var(--line)}
+dialog{border:none;border-radius:14px;padding:0;width:min(440px,calc(100vw - 32px));background:var(--panel);color:var(--ink);box-shadow:0 20px 50px rgba(0,0,0,.3)}
+dialog::backdrop{background:rgba(10,12,20,.45)}
+dialog form{padding:20px;display:grid;gap:10px}
+dialog h3{margin:0 0 4px}
+.err{color:var(--bad);font-size:13px;min-height:1em}
+.tabs{display:flex;gap:6px}
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--panel);
+  padding:9px 16px;border-radius:10px;font-size:14px;opacity:0;transition:opacity .25s;pointer-events:none;max-width:calc(100vw - 32px)}
+.toast.show{opacity:1}
+.hint{font-size:12.5px;color:var(--muted)}
+@media (max-width:1100px){main{grid-template-columns:minmax(260px,340px) 1fr}.side{grid-column:1/-1}}
+@media (max-width:720px){
+  header{padding:10px 16px} main{grid-template-columns:1fr;padding:12px 16px}
+  .list{max-height:none} .detail{padding:16px}
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 13v8"/><circle cx="12" cy="11" r="2"/><path d="M7.8 6.8a6 6 0 0 0 0 8.4M16.2 6.8a6 6 0 0 1 0 8.4M4.9 3.9a10 10 0 0 0 0 14.2M19.1 3.9a10 10 0 0 1 0 14.2"/></svg>
+    LoRa Forum
+  </div>
+  <span class="pill" title="This laptop's NDN name"><span class="dot on"></span><span id="nodeName">…</span></span>
+  <span class="pill" id="peerPill"><span class="dot" id="peerDot"></span><span id="peerText">peer: …</span></span>
+  <span class="spacer"></span>
+  <span id="who" class="hint"></span>
+  <button class="btn" id="authBtn">Sign in</button>
+  <button class="btn small" id="themeBtn" title="Switch light / dark">◐</button>
+</header>
+
+<main>
+  <section class="panel" aria-label="Topics">
+    <div class="toolbar">
+      <input id="search" placeholder="Search topics…" aria-label="Search">
+      <select id="sort" aria-label="Sort"></select>
+      <button class="btn primary" id="newBtn">New topic</button>
+    </div>
+    <div class="chips" id="chips"></div>
+    <div class="list" id="list"></div>
+  </section>
+
+  <section class="panel" id="detail" aria-label="Topic">
+    <div class="empty" style="padding:80px 20px">
+      <p style="font-size:17px;margin:0 0 6px">Pick a topic on the left</p>
+      <p class="hint">Every post is stored on this laptop and sent to the other one over LoRa using Named Data Networking.</p>
+    </div>
+  </section>
+
+  <aside class="panel side pad" aria-label="Radio">
+    <h2>Radio link</h2>
+    <div class="stats">
+      <div class="stat"><b id="sTx">0</b><span>packets sent</span></div>
+      <div class="stat"><b id="sRx">0</b><span>packets received</span></div>
+      <div class="stat"><b id="sRssi">–</b><span>last signal (dBm)</span></div>
+      <div class="stat"><b id="sCache">0</b><span>cached Data</span></div>
+    </div>
+    <div id="peers"></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin:12px 0 6px">
+      <h2 style="margin:0">Live packets</h2>
+      <button class="btn small" id="syncBtn">Sync now</button>
+    </div>
+    <div class="log" id="log"></div>
+    <h2 style="margin-top:16px">Activity</h2>
+    <div class="feed" id="feed"></div>
+  </aside>
+</main>
+
+<dialog id="authDlg">
+  <form method="dialog" id="authForm">
+    <h3 id="authTitle">Sign in</h3>
+    <div class="tabs"><button type="button" class="chip on" data-mode="login">Sign in</button><button type="button" class="chip" data-mode="register">Create account</button></div>
+    <input name="nickname" placeholder="Nickname" autocomplete="username" required>
+    <input name="password" type="password" placeholder="Password (6+ characters)" autocomplete="current-password" required>
+    <div class="err" id="authErr"></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end"><button type="button" class="btn" data-close>Cancel</button><button class="btn primary" id="authGo">Sign in</button></div>
+    <p class="hint">Accounts live on this laptop only. Others see you as <i>nickname@node</i>.</p>
+  </form>
+</dialog>
+
+<dialog id="newDlg">
+  <form method="dialog" id="newForm">
+    <h3>New topic</h3>
+    <input name="title" placeholder="Title" maxlength="120" required>
+    <select name="category" id="newCat" style="width:100%"></select>
+    <textarea name="body" id="newBody" placeholder="What do you want to talk about?" maxlength="1000"></textarea>
+    <div class="counter" id="newCounter"></div>
+    <div class="err" id="newErr"></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end"><button type="button" class="btn" data-close>Cancel</button><button class="btn primary">Post</button></div>
+  </form>
+</dialog>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const store = { get(k){ try{return localStorage.getItem(k)}catch(e){return null} }, set(k,v){ try{v==null?localStorage.removeItem(k):localStorage.setItem(k,v)}catch(e){} } };
+let token = store.get("lf_token") || null;
+let meta = {node:"", peers:[], categories:[], sorts:[]};
+let state = {sort: store.get("lf_sort") || "new", q:"", cat:"", selected:null};
+
+function ago(ts){ const s=Math.max(0,Date.now()/1000-ts); if(s<60) return Math.floor(s)+"s ago"; if(s<3600) return Math.floor(s/60)+"m ago"; if(s<86400) return Math.floor(s/3600)+"h ago"; return Math.floor(s/86400)+"d ago"; }
+function toast(msg){ const t=$("#toast"); t.textContent=msg; t.classList.add("show"); clearTimeout(t._h); t._h=setTimeout(()=>t.classList.remove("show"),2600); }
+async function api(path, body){
+  const opt = {headers:{}}; if(token) opt.headers.Authorization = "Bearer "+token;
+  if(body!==undefined){ opt.method="POST"; opt.headers["Content-Type"]="application/json"; opt.body=JSON.stringify(body); }
+  const r = await fetch(path, opt); const data = await r.json().catch(()=>({}));
+  if(!r.ok) { if(r.status===401 && body!==undefined) openAuth(); throw new Error(data.error || ("HTTP "+r.status)); }
+  return data;
+}
+function packetsFor(text){ const bytes = new TextEncoder().encode(text).length + 90; return Math.ceil(bytes/200); }
+function delivery(item){
+  if(item.origin !== meta.node) return `<span class="tag lora" title="Arrived over LoRa">via LoRa · ${esc(item.origin)}</span>`;
+  return item.delivered ? `<span class="tick done" title="The other laptop has it">✓✓ delivered</span>` : `<span class="tick wait" title="Waiting for the other laptop to fetch it">✓ waiting</span>`;
+}
+
+/* ---------- theme ---------- */
+const savedTheme = store.get("lf_theme"); if(savedTheme) document.documentElement.dataset.theme = savedTheme;
+$("#themeBtn").onclick = () => { const dark = matchMedia("(prefers-color-scheme: dark)").matches;
+  const cur = document.documentElement.dataset.theme || (dark?"dark":"light"); const next = cur==="dark"?"light":"dark";
+  document.documentElement.dataset.theme = next; store.set("lf_theme", next); };
+
+/* ---------- auth ---------- */
+let authMode = "login";
+function setAuthMode(m){ authMode=m; document.querySelectorAll("#authForm .chip").forEach(c=>c.classList.toggle("on", c.dataset.mode===m));
+  $("#authTitle").textContent = m==="login"?"Sign in":"Create account"; $("#authGo").textContent = m==="login"?"Sign in":"Create account"; $("#authErr").textContent=""; }
+document.querySelectorAll("#authForm .chip").forEach(c=>c.onclick=()=>setAuthMode(c.dataset.mode));
+function openAuth(){ setAuthMode("login"); $("#authDlg").showModal(); }
+$("#authBtn").onclick = () => { if(token){ token=null; store.set("lf_token",null); refreshMe(); loadTopics(); if(state.selected) loadTopic(state.selected); toast("Signed out"); } else openAuth(); };
+$("#authForm").onsubmit = async e => { e.preventDefault(); const f = new FormData(e.target);
+  try{ const r = await api("/api/"+authMode, {nickname:f.get("nickname"), password:f.get("password")});
+    token = r.token; store.set("lf_token", token); $("#authDlg").close(); e.target.reset(); refreshMe(); toast("Welcome, "+r.name); loadTopics(); }
+  catch(err){ $("#authErr").textContent = err.message; } };
+async function refreshMe(){ const me = await api("/api/me").catch(()=>({name:null}));
+  if(!me.name && token){ token=null; store.set("lf_token",null); }
+  $("#who").textContent = me.name ? me.name : ""; $("#authBtn").textContent = me.name ? "Sign out" : "Sign in"; }
+document.querySelectorAll("[data-close]").forEach(b=>b.onclick=()=>b.closest("dialog").close());
+
+/* ---------- topics ---------- */
+function renderChips(){
+  const all = [""].concat(meta.categories);
+  $("#chips").innerHTML = all.map(c=>`<button class="chip ${state.cat===c?"on":""}" data-c="${esc(c)}">${c?esc(c):"all"}</button>`).join("");
+  document.querySelectorAll("#chips .chip").forEach(b=>b.onclick=()=>{ state.cat=b.dataset.c; renderChips(); loadTopics(); });
+}
+async function loadTopics(){
+  const qs = new URLSearchParams({sort:state.sort, q:state.q, category:state.cat});
+  let topics; try{ topics = await api("/api/topics?"+qs); }catch(e){ return; }
+  if(!topics.length){ $("#list").innerHTML = `<div class="empty">${state.q||state.cat ? "No topics match." : "No topics yet. Start the first one!"}</div>`; return; }
+  $("#list").innerHTML = topics.map(t=>`
+    <div class="topic ${state.selected===t.id?"sel":""}" data-id="${esc(t.id)}" role="button" tabindex="0">
+      <div class="score">${t.score}<small>votes</small></div>
+      <div><div class="ttitle">${esc(t.title)}</div>
+        <div class="meta"><span class="tag">${esc(t.category)}</span><span>${esc(t.author)}</span><span>${ago(t.created_at)}</span><span>💬 ${t.comment_count}</span>${delivery(t)}</div></div>
+    </div>`).join("");
+  document.querySelectorAll(".topic").forEach(el=>{ const go=()=>{ state.selected=el.dataset.id; loadTopics(); loadTopic(el.dataset.id); };
+    el.onclick=go; el.onkeydown=e=>{ if(e.key==="Enter") go(); }; });
+}
+function voteBox(id, score, mine){
+  return `<span class="votes"><button class="${mine===1?"on":""}" data-vote="${esc(id)}" data-v="${mine===1?0:1}" aria-label="Upvote">▲</button><span>${score}</span><button class="${mine===-1?"on":""}" data-vote="${esc(id)}" data-v="${mine===-1?0:-1}" aria-label="Downvote">▼</button></span>`;
+}
+let draft = "";
+async function loadTopic(id){
+  let page; try{ page = await api("/api/topic?id="+encodeURIComponent(id)); }catch(e){ return; }
+  const box = $("#detail"); const ta = box.querySelector("#cBody"); if(ta) draft = ta.value;
+  const focused = document.activeElement && document.activeElement.id === "cBody";
+  const t = page.topic;
+  box.innerHTML = `<div class="detail">
+    <div class="meta"><span class="tag">${esc(t.category)}</span><span>${esc(t.author)}</span><span>${ago(t.created_at)}</span>${delivery(t)}</div>
+    <h1>${esc(t.title)}</h1>${voteBox(t.id, t.score, t.my_vote)}
+    ${t.body ? `<div class="body">${esc(t.body)}</div>` : `<div style="height:14px"></div>`}
+    <h2 style="font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)">${page.comments.length} comment${page.comments.length===1?"":"s"}</h2>
+    ${page.comments.map(c=>`<div class="comment"><div><div class="meta"><b style="color:var(--ink)">${esc(c.author)}</b><span>${ago(c.created_at)}</span>${delivery(c)}</div><p>${esc(c.body)}</p></div><div>${voteBox(c.id,c.score,c.my_vote)}</div></div>`).join("")}
+    <form id="cForm" style="margin-top:14px">
+      <textarea id="cBody" placeholder="${token?"Write a comment…":"Sign in to comment"}" maxlength="500"></textarea>
+      <div class="counter" id="cCounter"></div>
+      <div style="display:flex;justify-content:flex-end;margin-top:6px"><button class="btn primary">Comment</button></div>
+    </form></div>`;
+  const tb = box.querySelector("#cBody"); tb.value = draft; if(focused){ tb.focus(); tb.setSelectionRange(tb.value.length, tb.value.length); }
+  const upd = ()=>counter(tb, $("#cCounter"), 500); tb.oninput = upd; upd();
+  box.querySelector("#cForm").onsubmit = async e => { e.preventDefault();
+    try{ await api("/api/add_comment", {topic_id:t.id, body:tb.value}); draft=""; tb.value=""; toast("Comment saved, sending over LoRa…"); loadTopic(t.id); loadTopics(); }
+    catch(err){ toast(err.message); } };
+  box.querySelectorAll("[data-vote]").forEach(b=>b.onclick=async()=>{
+    try{ await api("/api/vote",{target_id:b.dataset.vote, value:+b.dataset.v}); loadTopic(t.id); loadTopics(); }catch(err){ toast(err.message); } });
+}
+function counter(input, el, max){ const n = input.value.length; const p = packetsFor(input.value);
+  el.innerHTML = `<span>${n}/${max} characters</span><span>≈ ${p} LoRa packet${p===1?"":"s"}</span>`; el.classList.toggle("over", n>max); }
+
+$("#search").oninput = e => { state.q = e.target.value; clearTimeout(window._sq); window._sq=setTimeout(loadTopics,200); };
+$("#sort").onchange = e => { state.sort = e.target.value; store.set("lf_sort", state.sort); loadTopics(); };
+$("#newBtn").onclick = () => { if(!token) return openAuth(); $("#newErr").textContent=""; $("#newDlg").showModal(); };
+$("#newBody").oninput = () => counter($("#newBody"), $("#newCounter"), 1000);
+$("#newForm").onsubmit = async e => { e.preventDefault(); const f = new FormData(e.target);
+  try{ const t = await api("/api/create_topic", {title:f.get("title"), body:f.get("body"), category:f.get("category")});
+    $("#newDlg").close(); e.target.reset(); state.selected=t.id; loadTopics(); loadTopic(t.id); toast("Topic saved, sending over LoRa…"); }
+  catch(err){ $("#newErr").textContent = err.message; } };
+
+/* ---------- network panel ---------- */
+const arrow = {in:"←", out:"→", served:"✓", drop:"×", timeout:"⏱", error:"!"};
+async function loadNetwork(){
+  let n; try{ n = await api("/api/network"); }catch(e){ $("#peerDot").className="dot off"; $("#peerText").textContent="forum server stopped"; return; }
+  $("#sTx").textContent = n.radio.tx; $("#sRx").textContent = n.radio.rx; $("#sRssi").textContent = n.radio.last_rssi ?? "–"; $("#sCache").textContent = n.radio.cached;
+  const p = n.peers[0];
+  if(p){ $("#peerDot").className = "dot "+(p.online?"on":"off"); $("#peerText").textContent = p.peer + (p.online?" online":" offline"); }
+  $("#peers").innerHTML = n.peers.map(p=>`<div class="peer"><span class="dot ${p.online?"on":"off"}"></span><b>${esc(p.peer)}</b><span class="hint">${p.online?"seen "+ago(p.last_seen):(p.last_error?esc(p.last_error):"not seen yet")}</span></div>`).join("")
+    + `<div class="hint">Mode: ${esc(n.mode)}${n.last_sync?" · last sync "+ago(n.last_sync):""}</div>`;
+  $("#log").innerHTML = n.traffic.length ? n.traffic.map(x=>`<div class="${esc(x.kind)}"><b>${arrow[x.kind]||"·"}</b><span>${esc(x.name)} <i>${esc(x.detail)}</i></span></div>`).join("") : `<div><b>·</b><span>no packets yet</span></div>`;
+  $("#feed").innerHTML = n.activity.length ? n.activity.slice(0,12).map(a=>`<div>${a.via_lora?"📡 ":""}${esc(a.text)} <span class="hint">${ago(a.time)}</span></div>`).join("") : `<div class="hint">Nothing yet.</div>`;
+}
+$("#syncBtn").onclick = async () => { await api("/api/sync_now", {}).catch(()=>{}); toast("Asking the other laptop for news…"); };
+
+/* ---------- start ---------- */
+(async function(){
+  meta = await api("/api/meta");
+  document.title = "LoRa Forum · " + meta.node;
+  $("#nodeName").textContent = meta.node;
+  $("#sort").innerHTML = meta.sorts.map(s=>`<option value="${esc(s.key)}">${esc(s.label)}</option>`).join(""); $("#sort").value = state.sort;
+  $("#newCat").innerHTML = meta.categories.map(c=>`<option>${esc(c)}</option>`).join("");
+  renderChips(); refreshMe(); loadTopics(); loadNetwork(); counter($("#newBody"), $("#newCounter"), 1000);
+  setInterval(loadTopics, 3000); setInterval(loadNetwork, 1500);
+  setInterval(()=>{ if(state.selected && !document.querySelector("dialog[open]")) loadTopic(state.selected); }, 4000);
+})();
+</script>
+</body>
+</html>
