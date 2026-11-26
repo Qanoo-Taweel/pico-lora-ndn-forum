@@ -13,6 +13,7 @@ import json
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent / "laptop"
+AUTHORS = "Qunoo A K Taweel (23291712) · Zeynep Arıcan (24290319)"
 OUT = Path(__file__).resolve().parent
 
 # --------------------------------------------------------------- read code
@@ -128,14 +129,16 @@ FULL_PAGES = [
                ("TransportFactory", "SerialTransport", "creates", "")]},
     {"title": "3. NDN node: Facade, Observer, Strategy", "note":
         "NdnNode is the facade of the whole NDN layer: fetch(), publish(), register_producer(). "
-        "It owns the Content Store, Pending Interest Table and nonce log, and runs every incoming packet through the handler chain.",
-     "rows": [["NdnNode", "Producer"], ["ContentStore", "PendingInterestTable", "NonceLog", "PacketHandler", "LoRaLinkFacade", "FunctionProducer"],
+        "It owns the Content Store, Pending Interest Table and nonce log, and runs every incoming packet through the handler chain. "
+        "Observer: RadioTrafficLog subscribes to NdnNode and records every frame sent or received.",
+     "rows": [["RadioTrafficLog", "NdnNode", "Producer"], ["ContentStore", "PendingInterestTable", "NonceLog", "PacketHandler", "LoRaLinkFacade", "FunctionProducer"],
               ["PendingEntry"]],
      "brief": ["PacketHandler", "LoRaLinkFacade"],
      "edges": [("NdnNode", "ContentStore", "has", ""), ("NdnNode", "PendingInterestTable", "has", ""),
                ("NdnNode", "NonceLog", "has", ""), ("NdnNode", "Producer", "has", "0..*"),
                ("NdnNode", "PacketHandler", "has", "chain"), ("NdnNode", "LoRaLinkFacade", "has", "link"),
-               ("PendingInterestTable", "PendingEntry", "has", "0..*")]},
+               ("PendingInterestTable", "PendingEntry", "has", "0..*"),
+               ("NdnNode", "RadioTrafficLog", "has", "listeners 0..*")]},
     {"title": "4. Incoming packets: Chain of Responsibility + Template Method", "note":
         "handle() is the template method: try this handler, otherwise pass to the next. Order: "
         "DuplicateInterestFilter → ContentStoreResponder → ProducerResponder → PendingInterestSatisfier → UnhandledPacketLogger.",
@@ -145,7 +148,7 @@ FULL_PAGES = [
     {"title": "5. Forum rules: Command, Factory Method, Observer", "note":
         "Every change is a ForumEvent command with apply(). The same object is saved, sent over LoRa and replayed on the other laptop. "
         "ForumEventBus notifies observers (ActivityFeed) without ForumService knowing them.",
-     "rows": [["ForumService", "ForumEventFactory", "ForumEventBus"], ["ForumEvent", "ActivityFeed", "RadioTrafficLog"],
+     "rows": [["ForumService", "ForumEventFactory", "ForumEventBus"], ["ForumEvent", "ActivityFeed"],
               ["TopicCreated", "CommentAdded", "VoteCast"], ["Topic", "Comment", "Vote", "User", "TopicPage"]],
      "edges": [("ForumService", "ForumEvent", "creates", ""), ("ForumEventFactory", "ForumEvent", "creates", ""),
                ("ForumService", "ForumEventBus", "has", "bus"), ("ForumEventBus", "ActivityFeed", "has", "listeners"),
@@ -156,11 +159,14 @@ FULL_PAGES = [
      "edges": [("ForumService", "RankingRegistry", "has", "rankings"), ("RankingRegistry", "TopicRankingStrategy", "has", "1..*")]},
     {"title": "7. Storage: Repository + Interface Segregation + Dependency Inversion", "note":
         "ForumService only knows the small repository interfaces. The SQLite classes implement them; create_sqlite_repository() wires them.",
-     "rows": [["ForumRepository", "SqliteDatabase"],
+     "rows": [["ForumRepository"],
               ["UserRepository", "TopicRepository", "CommentRepository", "VoteRepository", "EventLogRepository", "PeerProgressRepository"],
               ["SqliteUserRepository", "SqliteTopicRepository", "SqliteCommentRepository", "SqliteVoteRepository",
-               "SqliteEventLogRepository", "SqlitePeerProgressRepository"]],
-     "edges": [("ForumRepository", "UserRepository", "has", ""), ("ForumRepository", "TopicRepository", "has", ""),
+               "SqliteEventLogRepository", "SqlitePeerProgressRepository"], ["SqliteDatabase"]],
+     "edges": [("SqliteUserRepository", "SqliteDatabase", "has", "db"), ("SqliteTopicRepository", "SqliteDatabase", "has", "db"),
+               ("SqliteCommentRepository", "SqliteDatabase", "has", "db"), ("SqliteVoteRepository", "SqliteDatabase", "has", "db"),
+               ("SqliteEventLogRepository", "SqliteDatabase", "has", "db"), ("SqlitePeerProgressRepository", "SqliteDatabase", "has", "db"),
+               ("ForumRepository", "UserRepository", "has", ""), ("ForumRepository", "TopicRepository", "has", ""),
                ("ForumRepository", "CommentRepository", "has", ""), ("ForumRepository", "VoteRepository", "has", ""),
                ("ForumRepository", "EventLogRepository", "has", ""), ("ForumRepository", "PeerProgressRepository", "has", "")]},
     {"title": "8. Syncing with the other laptop: Proxy", "note":
@@ -175,20 +181,25 @@ FULL_PAGES = [
     {"title": "9. User actions and web: UserInteractionFactory (Factory Method + Command)", "note":
         "POST /api/<action> → UserInteractionFactory.create(action) → interaction.run(ctx). "
         "run() is a template method: check login → check fields → execute().",
-     "rows": [["ForumWebApi", "UserInteractionFactory", "InteractionContext"], ["UserInteraction", "AuthService"],
-              ["RegisterInteraction", "LoginInteraction", "CreateTopicInteraction"],
-              ["AddCommentInteraction", "CastVoteInteraction", "SyncNowInteraction"], ["PasswordHasher", "TokenSigner"]],
+     "rows": [["PasswordHasher", "AuthService", "TokenSigner"],
+              ["ForumWebApi", "UserInteractionFactory", "InteractionContext"],
+              ["UserInteraction"],
+              ["RegisterInteraction", "LoginInteraction", "CreateTopicInteraction",
+               "AddCommentInteraction", "CastVoteInteraction", "SyncNowInteraction"]],
      "edges": [("ForumWebApi", "UserInteractionFactory", "uses", ""), ("UserInteractionFactory", "UserInteraction", "creates", ""),
                ("UserInteraction", "InteractionContext", "uses", "run(ctx)"), ("AuthService", "PasswordHasher", "has", ""),
-               ("AuthService", "TokenSigner", "has", "")]},
+               ("AuthService", "TokenSigner", "has", ""), ("InteractionContext", "AuthService", "has", "auth")]},
     {"title": "10. Composition root: LoRaForumApp (Facade + Dependency Injection)", "note":
         "app.py is the only place that creates concrete classes and plugs them together. Everything else receives its dependencies.",
-     "rows": [["LoRaForumApp"], ["ForumWebApi", "ForumService", "AuthService", "PeerSynchronizer"],
-              ["NdnNode", "ForumRepository", "UserInteractionFactory", "RemoteForumProxy"]],
+     "rows": [["LoRaLinkFacade", "NdnNode", "RadioTrafficLog", "ForumRepository", "ForumEventBus", "ActivityFeed"],
+              ["LoRaForumApp"],
+              ["ForumService", "AuthService", "UserInteractionFactory", "RemoteForumProxy", "PeerSynchronizer", "ForumWebApi"]],
      "edges": [("LoRaForumApp", "ForumWebApi", "has", "api"), ("LoRaForumApp", "ForumService", "has", "forum"),
                ("LoRaForumApp", "AuthService", "has", "auth"), ("LoRaForumApp", "PeerSynchronizer", "has", "sync"),
                ("LoRaForumApp", "NdnNode", "has", "node"), ("LoRaForumApp", "ForumRepository", "has", "repo"),
-               ("LoRaForumApp", "UserInteractionFactory", "has", "interactions"), ("LoRaForumApp", "RemoteForumProxy", "has", "proxies")],
+               ("LoRaForumApp", "UserInteractionFactory", "has", "interactions"), ("LoRaForumApp", "RemoteForumProxy", "has", "proxies 0..*"),
+               ("LoRaForumApp", "LoRaLinkFacade", "has", "link"), ("LoRaForumApp", "RadioTrafficLog", "has", "traffic"),
+               ("LoRaForumApp", "ForumEventBus", "has", "bus"), ("LoRaForumApp", "ActivityFeed", "has", "activity")],
      "compact": True},
 ]
 
@@ -277,8 +288,10 @@ def render(pages: list[dict], classes: dict, title: str, path: Path) -> None:
                     edges.append((n, b, "inherit", ""))
         rows = "".join('<div class="row">%s</div>' % "".join(
             box_html(classes[n], p.get("simple", False), p.get("compact", False) or n in p.get("brief", ())) for n in row) for row in p["rows"])
-        parts.append('<section class="page" data-edges=\'%s\'><div class="inner"><h1>%s</h1><p class="note">%s</p>{{LEGEND}}<div class="canvas"><svg class="wires"></svg>%s</div></div></section>'
-                     % (html.escape(json.dumps(edges)), html.escape(p["title"]), html.escape(p["note"]), rows))
+        parts.append('<section class="page" data-edges=\'%s\'><div class="inner"><h1>%s</h1><p class="note">%s</p>{{LEGEND}}<div class="canvas"><svg class="wires"></svg>%s</div></div>'
+                     '<div class="foot"><span>%s</span><span>%s · page %d / %d</span></div></section>'
+                     % (html.escape(json.dumps(edges)), html.escape(p["title"]), html.escape(p["note"]), rows,
+                        html.escape(title), html.escape(AUTHORS), i + 1, len(pages)))
     legend = ('<div class="legend"><b>Legend</b> '
               '<span>── ▷ inherits / implements</span><span>──→ has (field)</span>'
               '<span>- - → uses</span><span>- - → «create» creates</span>'
@@ -297,9 +310,10 @@ body{margin:0;background:var(--bg);color:var(--ink);font:10px/1.35 -apple-system
 .page{width:277mm;height:190mm;margin:0 auto;overflow:hidden;page-break-after:always;break-after:page;position:relative}
 .inner{transform-origin:top left;padding:2mm 2mm 0}
 h1{font-size:15px;margin:0 0 2px}
+.foot{position:absolute;left:2mm;right:2mm;bottom:0;height:5mm;display:flex;justify-content:space-between;align-items:center;border-top:1px solid #d1d5db;color:#4b5563;font-size:9px;background:#fff}
 .note{margin:0 0 8px;color:#374151;font-size:10.5px;max-width:250mm}
 .canvas{position:relative}
-.row{display:flex;z-index:1;justify-content:center;align-items:flex-start;gap:26px 30px;flex-wrap:wrap;margin-bottom:34px;position:relative;z-index:1}
+.row{display:flex;z-index:1;justify-content:center;align-items:flex-start;gap:26px 30px;flex-wrap:nowrap;width:max-content;min-width:100%;margin-bottom:34px;position:relative;z-index:1}
 .box{background:var(--box);border:1.3px solid var(--line);border-radius:3px;min-width:120px;max-width:300px;font-family:Menlo,Consolas,monospace;font-size:8.6px}
 .hd{background:var(--head);text-align:center;padding:4px 6px;border-bottom:1.3px solid var(--line)}
 .st{font-size:8px;color:var(--muted)} .nm{font-weight:700;font-size:10.5px;font-family:-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
@@ -316,11 +330,11 @@ svg.wires{position:absolute;left:0;top:0;width:100%;height:100%;z-index:0;pointe
 {{PAGES}}
 <script>
 function fit(page){
-  const inner=page.querySelector('.inner'); const W=page.clientWidth, H=page.clientHeight; let sc=1;
+  const inner=page.querySelector('.inner'); const W=page.clientWidth, H=page.clientHeight-22; let sc=1;
   for(let i=0;i<12;i++){
     inner.style.width=(W/sc)+'px'; inner.style.transform='scale('+sc+')';
-    const h=inner.scrollHeight*sc; if(h<=H) break;
-    sc=sc*Math.max(0.6, Math.sqrt(H/h))*0.99;
+    const h=inner.scrollHeight*sc, w=inner.scrollWidth*sc; if(h<=H && w<=W+1) break;
+    sc=sc*Math.min(Math.max(0.6, Math.sqrt(H/h)), W/w)*0.99;
   }
 }
 function pos(el, root){ let x=0,y=0; while(el && el!==root){ x+=el.offsetLeft; y+=el.offsetTop; el=el.offsetParent; } return [x,y]; }

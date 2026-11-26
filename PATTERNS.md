@@ -1,5 +1,7 @@
 # Design patterns and SOLID principles
 
+**Authors:** Qunoo A K Taweel (23291712) · Zeynep Arıcan (24290319)
+
 This document lists where each design pattern and SOLID principle is applied in the code: the class that implements it and the reason it was chosen.
 
 ## How the program is layered
@@ -32,7 +34,7 @@ This document lists where each design pattern and SOLID principle is applied in 
 | **Command** | `forum/events.py` → `TopicCreated`, `CommentAdded`, `VoteCast`; `forum/interactions.py` → `UserInteraction` | Each change is an object with `apply()` / `execute()`. The same event object is stored, sent over LoRa, and replayed on the other laptop. |
 | **Chain of Responsibility** | `ndn/handlers.py` → `DuplicateInterestFilter → ContentStoreResponder → ProducerResponder → PendingInterestSatisfier → UnhandledPacketLogger` | Each incoming packet is passed along the chain until one handler deals with it. New rules are new links in the chain. |
 | **Template Method** | `ndn/handlers.py` → `PacketHandler.handle()`; `forum/interactions.py` → `UserInteraction.run()` | The base class fixes the steps, and subclasses fill in one step. |
-| **Observer** | `forum/observers.py` → `ForumEventBus`, `ActivityFeed`, `RadioTrafficLog`; `NdnNode.subscribe()` | The web page's activity feed and live packet log get notified about changes without the service or the network knowing about the web page. |
+| **Observer** | `forum/observers.py` → `ForumEventBus` notifies `ActivityFeed`; `NdnNode.subscribe()` notifies `RadioTrafficLog` | The web page's activity feed and live packet log get notified about changes without the service or the network knowing about the web page. |
 | **Strategy** | `forum/ranking.py` → `NewestFirst`, `Trending`, `TopVoted`, `MostDiscussed`; `ndn/node.py` → `Producer` | They let you swap how topics are ordered, or how Data is produced, at runtime. |
 | **Adapter** | `ndn/transport.py` → `PyserialTransport`, `PosixTtyTransport`, `MemoryTransport` | They make three different "serial" APIs look the same, so the real Pico and the simulator can be swapped. |
 | **Repository** | `forum/repository.py` → `TopicRepository`, `CommentRepository`, … and the `Sqlite…` classes | They keep all SQL in one place. The rules (`ForumService`) never see SQL. |
