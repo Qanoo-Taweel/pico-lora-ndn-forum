@@ -3,8 +3,8 @@
 Design patterns:
   * Adapter: PyserialTransport and PosixTtyTransport adapt two very different
     serial APIs (the pyserial library / raw POSIX termios) to one small
-    interface, SerialTransport. MemoryTransport adapts an in-memory "fake
-    radio" to the same interface for tests and the simulator.
+    interface, SerialTransport. MemoryTransport adapts an in-memory simulated
+    radio to the same interface for tests and the simulator.
   * Factory Method: TransportFactory.create() decides which adapter to build,
     so the rest of the program never imports pyserial or termios.
   * Liskov Substitution: any SerialTransport can replace any other.
@@ -107,7 +107,7 @@ class PosixTtyTransport(SerialTransport):
 
 
 class MemoryTransport(SerialTransport):
-    """A fake Pico + radio living in memory. Two of them form a simulated LoRa link.
+    """A simulated Pico + radio living in memory. Two of them form a simulated LoRa link.
 
     It speaks exactly the same line protocol as bridge_main.py on the real Pico,
     so everything above it behaves as with real hardware.

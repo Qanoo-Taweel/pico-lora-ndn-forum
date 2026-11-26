@@ -1,21 +1,21 @@
 # Step 2: Run the forum over LoRa
 
-You need: both Picos (wired as in step 1), both laptops, and `lora-forum.zip`.
+You need: both Picos (wired as in step 1), both laptops, and a copy of this repository.
 No internet is needed between the laptops. Everything goes through the radios.
 
 ## A. Turn each Pico into a "LoRa antenna" (do it on both)
 
 1. Plug the Pico in and open **Thonny**.
-2. Open `pico/bridge_main.py` from the zip, then **File > Save as… > Raspberry Pi Pico** and name it **`main.py`**. If it asks, overwrite the old file. Leave `sx1278.py` on the Pico, because the bridge needs it.
+2. Open `pico/bridge_main.py` from this repository, then **File > Save as… > Raspberry Pi Pico** and name it **`main.py`**. If it asks, overwrite the old file. Leave `sx1278.py` on the Pico, because the bridge needs it.
 3. Press the red **Stop** button. The Shell should print `READY`. (`main.py` runs by itself every time the Pico gets power.)
 4. **Quit Thonny completely (⌘Q).** Thonny keeps the USB port busy, and the forum can't talk to the Pico while it's open.
 
 ## B. Put the program on both laptops
 
-1. Unzip `lora-forum.zip` somewhere easy, like your Desktop.
+1. Clone this repository (or use **Code > Download ZIP** on GitHub and unzip it), for example to your Desktop.
 2. Open **Terminal** and go into the folder:
    ```
-   cd ~/Desktop/lora-forum/laptop
+   cd ~/Desktop/pico-lora-ndn-forum/laptop
    ```
 3. Check Python with `python3 --version`. Any version from 3.8 up works. Nothing else needs installing on a Mac.
    On **Windows**, also run `py -m pip install pyserial` once, and use `py` instead of `python3` below.
@@ -51,7 +51,7 @@ If the program can't find the Pico by itself, give the port:
 
 ## E. Demo script
 
-1. Show the two laptops a few metres apart with only the radios connecting them. Turn Wi‑Fi off to make the point.
+1. Show the two laptops a few metres apart with only the radios connecting them. Turn Wi‑Fi off to show that no other network is involved.
 2. Post a topic on laptop A. Point at the → Interest and ← Data lines in the Live packets panel on B.
 3. Comment and vote on B. Watch them arrive on A, and the ✓✓ ticks appear.
 4. Unplug one Pico. The pill turns red ("offline"). Post on the other side, then plug the Pico back in and start the app again: everything catches up. That shows that NDN is about names, not connections.

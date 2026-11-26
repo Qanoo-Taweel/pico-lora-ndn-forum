@@ -1,6 +1,6 @@
 # bridge_main.py - save this on each Pico as  main.py  (it then starts by itself on power-up).
 #
-# The Pico is a "dumb antenna" for the laptop: it does not know anything about
+# The Pico acts as a transparent radio bridge for the laptop: it knows nothing about
 # NDN or the forum. It only moves bytes between USB and the LoRa radio.
 #
 # USB line protocol (text, one command per line):

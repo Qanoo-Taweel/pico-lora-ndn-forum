@@ -14,7 +14,7 @@ Every row of 5 holes on one side of the groove is connected inside the breadboar
 
 ### A2. Plug in the LoRa wires (all on the right side, column i or j)
 
-Colors are read from your photos. The label next to each wire on the module is in the second column.
+The wire colours are the ones used in our build; any colours work. The second column is the label printed next to each pin on the module.
 
 | Wire color | Module label | Breadboard row (right side) | Pico pin |
 |---|---|---|---|
@@ -35,7 +35,7 @@ Rules:
 ## B. Put MicroPython on each Pico (one time)
 
 1. Download the newest `.uf2` file from https://micropython.org/download/RPI_PICO2_W/ (it must be **RPI_PICO2_W**, not RPI_PICO_W).
-2. Hold the **BOOTSEL** button, plug the Pico into the Mac, then let go. A drive called `RP2350` appears.
+2. Hold the **BOOTSEL** button, plug the Pico into the computer, then let go. A drive called `RP2350` appears.
 3. Drag the `.uf2` onto that drive. It disconnects by itself when it's done.
 
 ## C. Install Thonny and copy the files
@@ -48,7 +48,7 @@ Rules:
 
 ## D. Run the test
 
-1. Plug in both Picos. They can go into the same Mac or into two laptops.
+1. Plug in both Picos. They can go into the same computer or into two laptops.
 2. In Thonny, open `hello.py` from the Pico and press **Run** (green arrow).
 3. If you only have one Thonny window, power the second Pico from the other laptop or any USB charger. To make it run by itself, save a copy of `hello.py` on it as `main.py`; you can delete that `main.py` afterwards.
 

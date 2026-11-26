@@ -2,7 +2,7 @@
 
 **Authors:** Qunoo A K Taweel (23291712) · Zeynep Arıcan (24290319)
 
-A university assignment: two laptops run the same little forum (topics, comments, votes, accounts), and they keep each other in sync **over LoRa radio instead of the internet**. The data travels using **NDN (Named Data Networking)**: a laptop asks for data by name (an *Interest*, like `/forum/qanoo/head/...`) and the other side answers with a *Data* packet.
+A university assignment: two laptops run the same small forum (topics, comments, votes, accounts), and they keep each other in sync **over LoRa radio instead of the internet**. The data travels using **NDN (Named Data Networking)**: a laptop asks for data by name (an *Interest*, like `/forum/qanoo/head/...`) and the other side answers with a *Data* packet.
 
 Each laptop has a **Raspberry Pi Pico 2 W** with an **XL1278 (SX1278) 433 MHz LoRa module** plugged into USB. The Pico is just a bridge, like an antenna attached to the computer: it passes frames between USB serial and the radio.
 
